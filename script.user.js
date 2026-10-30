@@ -1,8 +1,9 @@
 // ==UserScript==
 // @name         Toggle MN Panel Button
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Добавляет кнопку 📜 в блок .mn-tb перед кнопкой [i] для скрытия/показа панели .mn-panel.panel
+// @author       CheSh1re Nvm
 // @match        https://play.multidonate.ru/*
 // @updateURL    https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/script.user.js
 // @downloadURL  https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/script.user.js
