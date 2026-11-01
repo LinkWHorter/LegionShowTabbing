@@ -5,7 +5,7 @@
 // @description  Плашка добычи за сессию с ограничением выхода за границы экрана при перетаскивании
 // @author       CheSh1re Nvm
 // @match        https://play.multidonate.ru/*
-// @updateURL    https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/third-cript.user.js
+// @updateURL    https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/third-script.user.js
 // @downloadURL  https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/third-script.user.js
 // @grant        none
 // @run-at       document-end
