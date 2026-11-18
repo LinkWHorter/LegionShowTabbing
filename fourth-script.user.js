@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         Казинака — игра на совпадения
 // @namespace    http://tampermonkey.net/
-// @version      1.1.5
-// @description  Мини-игра с эмодзи, виртуальными монетами, анимацией, синусоидальной прогрессией стоимости и таймером восстановления
+// @version      1.1.6
+// @description  Мини-игра с эмодзи, виртуальными монетами, анимацией, плавной синусоидальной прогрессией стоимости и таймером восстановления
 // @author       CheSh1re Nvm
 // @match        https://legiongame.gg/*
-// @updateURL    https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/fourth-script.user.js
-// @downloadURL  https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/fourth-script.user.js
+// @updateURL    https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/fouth-script.user.js
+// @downloadURL  https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/fouth-script.user.js
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==
@@ -39,7 +39,6 @@
     let isGamblingTimeout = false;
     let audioContext = null;
 
-    // Функция сокращения больших чисел (1k, 1m, 1b, 1t, 1q, 1s и т.д.)
     function formatNumber(num) {
         if (num < 1000) return String(num);
         const suffixes = ['', 'k', 'm', 'b', 't', 'q', 's', 'S', 'o', 'n', 'd'];
@@ -48,10 +47,13 @@
         return shortValue.replace(/\.0$/, '') + suffixes[i];
     }
 
+    // Плавная синусоидально-эллиптическая прогрессия стоимости
     function getCurrentCost() {
         if (winCount === 0) return 10;
-        const progressBonus = Math.round(15 * Math.sin(winCount * 0.35) + (winCount * 3.5));
-        return Math.max(10, 10 + progressBonus);
+        // Мягкий старт: коэффициент 0.18 делает начало очень пологим (+1, +2, +3...),
+        // а с ростом побед кривая красиво закругляется и идет вверх
+        const smoothBonus = Math.round(Math.sin(winCount * 0.18) * (winCount * 0.4) + (winCount * 1.25));
+        return Math.max(10, 10 + smoothBonus);
     }
 
     const css = document.createElement('style');
@@ -109,7 +111,7 @@
     widget.id = WIDGET_ID;
     widget.className = 'session-ore-section';
     widget.innerHTML = `
-        <div class="session-ore-header"><span>Казинака</span><span title="Мини-игра с прогрессивной стоимостью">✦</span></div>
+        <div class="session-ore-header"><span>Казинака</span><span title="Мини-игра с плавной прогрессивной стоимостью">✦</span></div>
         <div class="kz-line">
           <span class="kz-coin" aria-label="Виртуальные монеты" title="Баланс монет">●</span>
           <span class="kz-points" aria-live="polite" title="Баланс монет"></span>
@@ -134,7 +136,6 @@
         const formatted = formatNumber(points);
         counter.textContent = formatted;
 
-        // Подсказки с полной точной цифрой при наведении
         const fullTitle = `Баланс: ${points.toLocaleString()} монет`;
         counter.title = fullTitle;
         coinIcon.title = fullTitle;
@@ -182,7 +183,7 @@
         slot.textContent = symbol;
         const cost = SYMBOL_COSTS[symbol];
         if (cost !== undefined) {
-            slot.title = `${symbol}: базовая стоимость - ${cost} монет`;
+            slot.title = `Симв. ${symbol}: базовая стоимость - ${cost} монет`;
         } else {
             slot.title = 'Случ. символ';
         }
@@ -329,7 +330,7 @@
             await animatePoints(reward);
         }
 
-        rolling = false;
+    rolling = false;
 
         if (points <= 0) {
             triggerGamblingTimer();
