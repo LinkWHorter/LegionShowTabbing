@@ -163,7 +163,7 @@
 
         if (!isGamblingTimeout && !rolling) {
             const cost = getCurrentCost();
-            message.textContent = `Совпадение: 2 - ×2.5 / 3 - ×3 · Текущая цена: ${cost}`;
+            message.textContent = `Совпадение: 2 - ×2.5 / 3 - ×7.5 · Текущая цена: ${cost}`;
         }
     }
     updateUI();
@@ -347,7 +347,7 @@
             message.textContent = 'Все разные — попробуй ещё!';
         } else {
             const [id, count] = match;
-            const multiplier = count === 3 ? 4.5 : 2.5;
+            const multiplier = count === 3 ? 7.5 : 2.5;
             const reward = Math.round(SYMBOLS[id][1] * multiplier);
 
             winCount++;
