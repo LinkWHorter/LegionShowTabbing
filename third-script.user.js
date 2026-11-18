@@ -4,7 +4,7 @@
 // @version      1.6
 // @description  Плашка добычи за сессию с ограничением выхода за границы экрана при перетаскивании
 // @author       CheSh1re Nvm
-// @match        https://play.multidonate.ru/*
+// @match        https://legiongame.gg/*
 // @updateURL    https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/third-script.user.js
 // @downloadURL  https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/third-script.user.js
 // @grant        none
