@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Казинака — игра на совпадения
 // @namespace    http://tampermonkey.net/
-// @version      1.1.6
-// @description  Мини-игра с эмодзи, виртуальными монетами, анимацией, плавной синусоидальной прогрессией стоимости и таймером восстановления
+// @version      1.1.8
+// @description  Мини-игра с эмодзи, виртуальными монетами, анимацией, плавной прогрессией, таймером и рекордом под цифрой баланса
 // @author       CheSh1re Nvm
 // @match        https://legiongame.gg/*
 // @updateURL    https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/fouth-script.user.js
@@ -28,12 +28,16 @@
 
     const STORE_KEY = 'kazinaka-points-v1';
     const WINS_STORE_KEY = 'kazinaka-wins-v1';
+    const MAX_EARNED_KEY = 'kazinaka-max-earned-v1';
 
     const saved = Number(sessionStorage.getItem(STORE_KEY));
     let points = Number.isSafeInteger(saved) && saved >= 0 ? saved : 100;
 
     const savedWins = Number(sessionStorage.getItem(WINS_STORE_KEY));
     let winCount = Number.isSafeInteger(savedWins) && savedWins >= 0 ? savedWins : 0;
+
+    const savedMax = Number(localStorage.getItem(MAX_EARNED_KEY));
+    let maxEarned = Number.isSafeInteger(savedMax) && savedMax >= 0 ? savedMax : points;
 
     let rolling = false;
     let isGamblingTimeout = false;
@@ -47,11 +51,8 @@
         return shortValue.replace(/\.0$/, '') + suffixes[i];
     }
 
-    // Плавная синусоидально-эллиптическая прогрессия стоимости
     function getCurrentCost() {
         if (winCount === 0) return 10;
-        // Мягкий старт: коэффициент 0.18 делает начало очень пологим (+1, +2, +3...),
-        // а с ростом побед кривая красиво закругляется и идет вверх
         const smoothBonus = Math.round(Math.sin(winCount * 0.18) * (winCount * 0.4) + (winCount * 1.25));
         return Math.max(10, 10 + smoothBonus);
     }
@@ -80,8 +81,15 @@
             color: #795000; font-size: 14px; font-weight: 900;
             background: radial-gradient(circle at 30% 25%, #fff2a0, #ffcf45 55%, #bf7c05 100%);
             border: 2px solid #e8a91e; box-shadow: 0 1px 5px #0005; cursor: help; }
+        #${WIDGET_ID} .kz-points-col { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; flex: 0 0 auto; }
         #${WIDGET_ID} .kz-points { min-width: 46px; font-weight: 800; font-size: 14px;
             color: #ffe49a; font-variant-numeric: tabular-nums; cursor: help; }
+        #${WIDGET_ID} .kz-max-badge {
+            font-size: 9px; font-weight: 700; color: #ffcf6a;
+            background: rgba(255, 207, 106, 0.12); border: 1px solid rgba(255, 207, 106, 0.3);
+            padding: 1px 5px; border-radius: 6px; white-space: nowrap; cursor: help;
+            letter-spacing: 0.03em;
+        }
         #${WIDGET_ID} .kz-slots { display: flex; gap: 4px; padding: 5px;
             border-radius: 19px; border: 1px solid #ffcf6a55;
             background: #100e16; box-shadow: inset 0 2px 8px #0008; }
@@ -114,11 +122,14 @@
         <div class="session-ore-header"><span>Казинака</span><span title="Мини-игра с плавной прогрессивной стоимостью">✦</span></div>
         <div class="kz-line">
           <span class="kz-coin" aria-label="Виртуальные монеты" title="Баланс монет">●</span>
-          <span class="kz-points" aria-live="polite" title="Баланс монет"></span>
+          <div class="kz-points-col">
+            <span class="kz-points" aria-live="polite" title="Баланс монет"></span>
+            <span class="kz-max-badge" title="Максимум монет за всё время">Макс.: 0</span>
+          </div>
           <div class="kz-slots" aria-label="Три ячейки с эмодзи">
-            <span class="cy-sc kz-slot" title="Случайный символ">❔</span>
-            <span class="cy-sc kz-slot" title="Случайный символ">❔</span>
-            <span class="cy-sc kz-slot" title="Случайный символ">❔</span>
+            <span class="cy-sc kz-slot" title="Случ. символ">❔</span>
+            <span class="cy-sc kz-slot" title="Случ. символ">❔</span>
+            <span class="cy-sc kz-slot" title="Случ. символ">❔</span>
           </div>
           <button class="kz-roll" type="button" title="Запустить крутку" aria-label="Запустить комбинацию">👆</button>
         </div>
@@ -127,6 +138,7 @@
 
     const header = widget.querySelector('.session-ore-header');
     const coinIcon = widget.querySelector('.kz-coin');
+    const maxBadge = widget.querySelector('.kz-max-badge');
     const counter = widget.querySelector('.kz-points');
     const slots = [...widget.querySelectorAll('.kz-slot')];
     const rollButton = widget.querySelector('.kz-roll');
@@ -136,9 +148,18 @@
         const formatted = formatNumber(points);
         counter.textContent = formatted;
 
+        if (points > maxEarned) {
+            maxEarned = points;
+            localStorage.setItem(MAX_EARNED_KEY, String(maxEarned));
+        }
+
+        maxBadge.textContent = `Макс.: ${formatNumber(maxEarned)}`;
+
         const fullTitle = `Баланс: ${points.toLocaleString()} монет`;
+        const fullMaxTitle = `Монет за всё время: ${maxEarned.toLocaleString()}`;
         counter.title = fullTitle;
         coinIcon.title = fullTitle;
+        maxBadge.title = fullMaxTitle;
 
         if (!isGamblingTimeout && !rolling) {
             const cost = getCurrentCost();
@@ -183,7 +204,7 @@
         slot.textContent = symbol;
         const cost = SYMBOL_COSTS[symbol];
         if (cost !== undefined) {
-            slot.title = `Симв. ${symbol}: базовая стоимость - ${cost} монет`;
+            slot.title = `Символ ${symbol}: базовая стоимость - ${cost} монет`;
         } else {
             slot.title = 'Случ. символ';
         }
@@ -227,6 +248,14 @@
                 const progress = Math.min(1, (timestamp - started) / duration);
                 const value = startValue + Math.floor(amount * (1 - (1 - progress) ** 3));
                 counter.textContent = formatNumber(value);
+
+                if (value > maxEarned) {
+                    maxEarned = value;
+                    localStorage.setItem(MAX_EARNED_KEY, String(maxEarned));
+                    maxBadge.textContent = `Макс.: ${formatNumber(maxEarned)}`;
+                    maxBadge.title = `Монет за всё время: ${maxEarned.toLocaleString()}`;
+                }
+
                 if (progress < 1) {
                     requestAnimationFrame(tick);
                 } else {
@@ -330,7 +359,7 @@
             await animatePoints(reward);
         }
 
-    rolling = false;
+        rolling = false;
 
         if (points <= 0) {
             triggerGamblingTimer();
