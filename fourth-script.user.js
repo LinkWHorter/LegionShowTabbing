@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Казинака — игра на совпадения
 // @namespace    http://tampermonkey.net/
-// @version      1.1.8
-// @description  Мини-игра с эмодзи, виртуальными монетами, анимацией, плавной прогрессией, таймером и рекордом под цифрой баланса
+// @version      1.2.0
+// @description  Мини-игра с прогрессивной стоимостью, таймером и динамическим начислением бонуса от рекорда
 // @author       CheSh1re Nvm
 // @match        https://legiongame.gg/*
 // @updateURL    https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/fouth-script.user.js
@@ -285,7 +285,13 @@
                 rollButton.textContent = `${timeLeft}s`;
             } else {
                 clearInterval(timerInterval);
-                points = 100;
+
+                // Расчет бонуса: округляем maxEarned до сотен вниз, делим на 2, но не менее 100
+                const roundedHundreds = Math.floor(maxEarned / 100) * 100;
+                const calculatedBonus = Math.floor(roundedHundreds / 2);
+                const rewardBonus = Math.max(100, calculatedBonus);
+
+                points = rewardBonus;
                 winCount = 0;
                 sessionStorage.setItem(STORE_KEY, String(points));
                 sessionStorage.setItem(WINS_STORE_KEY, String(winCount));
@@ -294,7 +300,7 @@
                 rollButton.disabled = false;
                 rollButton.textContent = '👆';
                 message.classList.remove('danger');
-                message.textContent = 'Вам начислено 100 бонусных монет!';
+                message.textContent = `Вам начислено ${rewardBonus} бонусных монет!`;
                 updateUI();
             }
         }, 1000);
