@@ -4,7 +4,7 @@
 // @version      1.6
 // @description  Анимация кирки по изменению баланса чешуек и дробной части с ускоренным таймером
 // @author       CheSh1re Nvm
-// @match        https://play.multidonate.ru/*
+// @match        https://legiongame.gg/c/*
 // @updateURL    https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/second-script.user.js
 // @downloadURL  https://raw.githubusercontent.com/LinkWHorter/LegionShowTabbing/main/second-script.user.js
 // @grant        none
