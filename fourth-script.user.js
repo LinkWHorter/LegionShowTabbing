@@ -347,7 +347,7 @@
             message.textContent = 'Все разные — попробуй ещё!';
         } else {
             const [id, count] = match;
-            const multiplier = count === 3 ? 3 : 2.5;
+            const multiplier = count === 3 ? 4.5 : 2.5;
             const reward = Math.round(SYMBOLS[id][1] * multiplier);
 
             winCount++;
